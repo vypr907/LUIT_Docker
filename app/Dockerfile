@@ -1,14 +1,16 @@
-FROM nginx
+FROM nginx:latest
 
-COPY ./app/ .
-COPY ./app/web/index.html /usr/share/nginx/html/index.html
+COPY . /app
+
+COPY ./web/index.html /usr/share/nginx/html/index.html
 
 WORKDIR /app
 
-EXPOSE 8080
-
-ENTRYPOINT ["/bin/sh"]
+EXPOSE 80
 
 HEALTHCHECK --interval=5s --timeout=3s CMD curl -f http://localhost:8080 || nc -zv localhost 8080 || exit 1
 
-CMD ["deployDate.py"]
+RUN apt-get update
+RUN apt-get -y install python3
+
+CMD ["python3","./deployDate.py"]
