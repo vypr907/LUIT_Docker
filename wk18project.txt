@@ -1,0 +1,158 @@
+Create my own image using NGINX and add a file that will tell you the date the container has been deployed
+	
+
+import os
+from datetime import datetime
+
+with open("deployment.txt","w+") as file: #"w+" replaces the file each time it's run for a fresh doc
+file.write("This container was deployed at %s." %(datetime.datetime.now()))
+file.close
+   
+    make github repo with static website docs and py file
+    create py file here to create file w/date of deployment
+    make github repo with static website docs and py file
+    docker pull NGINX
+    
+docker run --name grrr -d -p 8080:80 nginx
+    
+docker exec -it grrr bash
+    
+apt update && apt install git
+    
+git clone <url> /tmp/pullTheLeverKronk
+    
+rm usr/share/nginx/html/index.html
+    
+cp-r tmp/pullTheLeverKronk/basic/web/* usr/share/nginx/html/
+    
+docker commit template wk18Proj:basic 
+
+Deploy my container with port 8080
+    
+    docker run -d --name winning -p 8080:80 wk18Proj:basic
+	
+Save my container data to the AWS ECR
+Create a repository
+
+aws ecr create-repository --repository-name luit-wk18-project --image-scanning-configuration scanOnPush=true --region us-east-2
+
+Authenticate the docker client to ECR
+aws ecr get-login-password --region us-east-2 | docker login --username AWS --password-stdin 107900886402.dkr.ecr.us-east-2.amazonaws.com
+
+TAG
+docker tag <imgID or name> <aws acct id>.dkr.ecr.<region>.amazonaws.com/<repository name>:<tag>
+docker tag wk18proj:basic 107900886402.dkr.ecr.us-east-2.amazoneaws.com/luit-wk18-project:basic
+
+Push
+docker push <aws acct id>.dkr.ecr.<region>.amazonaws.com/<repository name>:<tag>
+docker push 107900886402.dkr.ecr.us-east-2.amazonaws.com/luit-wk18-project:basic
+
+ADD VOLUME
+docker stop my_container
+docker volume create <name>
+docker run -d --name wk18proj --mount source=nginx-config,target=/etc/nginx nginx
+
+
+IF USING DOCKER COMPOSE
+version: "3.0"
+services:
+    web:
+        image: nginx:latest
+        ports: - "80:80"
+        volumes:
+            - /docker/nginx-config/:/etc/nginx/
+then restart Docker Compose:
+docker-compose up -d --build
+
+
+CLEANUP
+rm -rf /tmp/pullTheLeverKronk/
+apt remove git -y && apt autoremove -y && apt clean
+
+COMMIT
+TAG
+PUSH
+
+
+
+-------------------------------------------------------------------------------------
+ADVANCED
+	- Start the following 3 containers: NGINX, Linux, Ubuntu
+	- Add a file that will tell you the date the container has been deployed
+	- Automatically upload each file to an S3 bucket
+	- Save my container data to the AWS ECR
+
+
+--------------------------------------------------------------------------------------
+COMPLEX
+	- Use Docker Compose or a Dockerfile to complete the ADVANCED steps.
+be sure to change execution permissions on python file
+
+FROM nginx
+COPY /thisdirectory/myscript/ /app
+WORKDIR /app
+EXPOSE 8080
+ENTRYPOINT ["/bin/sh","run.sh"]
+CMD ["python.py"]
+
+docker build -t wk18proj .
+docker run -p 8080:80 wk18proj:complex
+
+
+
+
+
+
+
+with:
+
+Dockerfile
+FROM nginx
+COPY . /app
+COPY ./web/index.html /usr/share/nginx/html/index.html
+WORKDIR /app
+EXPOSE 8080
+
+RUN apt-get update
+RUN apt-get -y install python3
+
+CMD ["./deployDate.py"]     
+
+
+with:
+deployDate.py
+
+#!usr/bin/env python3
+import datetime
+
+
+ERROR
+import: not found
+
+change: CMD ["python3""./deployDate.py"]
+error: /bin/sh: 1: [python3./deployDate.py]: not found
+change: CMD ["python3","./deployDate.py"]
+error: module 'datetime' has no attribute 'now'
+change: from datetime import datetime
+
+
+docker run -it -d -p 8080:80 -v $PWD:/app wk18proj:complexv5
+
+
+CURRENT WORKING (except for localhost) version Dockerfile
+
+FROM nginx:latest
+
+COPY . /app
+
+COPY ./web/index.html /usr/share/nginx/html/index.html
+
+WORKDIR /app
+
+EXPOSE 8080
+
+RUN apt-get update
+RUN apt-get -y install python3
+
+CMD ["python3","./deployDate.py"]
+CMD tail -f /dev/null
