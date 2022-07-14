@@ -1,0 +1,97 @@
+version: "3.3"
+services:
+  api:
+    container_name: dev1
+    build: ./dev1/
+    networks:
+      - backend
+    volumes:
+      - type: volume
+        source: dev1-vol
+
+  nodered:
+    container_name: nodered
+    build: ./nodered/
+    networks:
+      - backend
+    ports:
+      - "1880:1880"
+    volumes:
+      - type: volume
+        source: nodered-vol
+        target: /data
+
+  influxdb:
+    container_name: influxdb
+    build: ./influxdb/
+    networks:
+      - backend
+    volumes:
+      - type: volume
+        source: influxdb-vol
+        target: /var/lib/influxdb2
+    environment:
+      DOCKER_INFLUXDB_INIT_MODE=setup
+      DOCKER_INFLUXDB_INIT_USERNAME=slasz
+      DOCKER_INFLUXDB_INIT_PASSWORD=slasz21
+      DOCKER_INFLUXDB_INIT_ORG=<org>
+      DOCKER_INFLUXDB_INIT_BUCKET=mybucket
+      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=nameoftoken
+    
+  grafana:
+    container_name: grafana
+    build: ./grafana/
+    networks:
+      - frontend
+      - backend
+      - db
+    ports:
+      - "3000:3000"
+    volumes:
+      - type: volume
+        source: grafana-vol
+    environment:
+      - GF_SECURITY_ADMIN_USER=username 
+      - GF_SECURITY_ADMIN_PASSWORD=password
+      - INFLUXDB_TOKEN=nameoftoken
+      - POSTGRES_USER=username
+      - POSTGRES_DB=nameofdb
+      - POSTGRES_PASSWORD=password
+
+
+  postgres:
+    container_name: postgres
+    build: ./postgres/
+    networks:
+      - db
+    volumes:
+      - type: volume
+        source: postgres-vol
+        target: /var/lib/postgresql/data/
+    environment:
+      - POSTGRES_USER=username
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=nameofdb
+  
+  postgrest:
+    container_name: postgrest
+    image: postgrest/postgrest
+    networks:
+      - backend
+      - db
+    environment:
+      - PGRST_DB_URI=postgres://username:password@postgres:5432/nameofdb
+      - PGRST_DB_ANON_ROLE=username
+      - PGRST_DB_SCHEMA=public
+
+volumes:
+  dev1-vol: {}
+  nodered-vol: {}
+  influxdb-vol: {}
+  grafana-vol: {}
+  postgres-vol: {}
+
+networks:
+  frontend: {}
+  backend: {}
+  db: {}
